@@ -77,3 +77,45 @@ console.log('Server is running on port 3000');
 });
 
 ## Tham khảo: GPT 4.0 mini
+
+# mongoose
+
+## MongoDB là gì?
+
+    MongoDB là một cơ sở dữ liệu NoSQL mã nguồn mở, sử dụng mô hình dữ liệu dựa trên document. Thay vì lưu trữ dữ liệu dưới dạng bảng (row và column) như SQL, MongoDB lưu trữ dưới dạng JSON-like documents (BSON-Binary JSON).
+
+### Tính năng chính
+
+**Document-Oriented** : Dữ liệu được lưu dưới dạng JSON-like
+**Schema-Less**: Không cần định nghĩa schema trước, giúp linh hoạt hơn khi lưu dữ liệu.
+**Horizontal Scaling**: Hỗ trợ sharding, giúp phân tích dữ liệu trên nhiều server.
+**High Performance**: Tối ưu hoá để xử lý các tác vụ nhanh chóng
+**Query ngôn ngữ mạnh mẽ**: Hỗ trợ tìm kiếm, lọc, sắp xếp và nhiều thao tác khác.
+
+### Ưu điểm:
+
+- Phù hợp với dữ liệu phi cấu trúc và thay đổi thường xuyên
+- Hỗ trợ tích hợp với các công cụ và ngôn ngữ hiện đại như Node.js
+- Dễ học và sử dụng
+
+### Hạn chế
+
+- Không phù hợp với các hệ thống yêu cầu tính toàn vẹn dữ liệu chặt chẽ như ngân hàng
+
+## Mongoose là gì?
+
+Mongoose là thư viện ODM(Object Data Modeling) cho MongoDB và Node.js. Nó cung cấp cách làm việc với MongoDB bằng cách sử dụng các đối tượng trong JS(models) đồng thời hỗ trợ định nghĩa Schema và xác thực dữ liệu
+
+### Lợi ích:
+
+**Schema-based modeling**: Xác định cấu trúc và dữ liệu ngay từ đầu.
+**Validation**: Hỗ trợ xác thực dữ liệu
+**Middleware**: Cung cấp các hooks để xử lý trước/sau các hành động như save, delete, find
+**Query helpers**: Dễ dàng viết các query phức tạp
+**Relationship management**: Quản lý mối quan hệ giữa các document.
+
+### Cách cài đặt
+
+npm i mongoose
+
+**Kiểm tra các file trong thư mục models**
