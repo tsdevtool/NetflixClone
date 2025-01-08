@@ -119,3 +119,76 @@ Mongoose là thư viện ODM(Object Data Modeling) cho MongoDB và Node.js. Nó 
 npm i mongoose
 
 **Kiểm tra các file trong thư mục models**
+
+# jwt (JSON Web Token)
+
+JWT là một tiêu chuẩn mã hoá dựa trên JSON, được sử dụng để truyền tải dữ liệu giữa các bên (client và server) một cách an toàn. JWT thường được sử dụng trong xác thực (authentication) và uỷ quyền (authoriaztion) trong các ứng dụng web.
+
+## Cấu trúc
+
+JWT có 3 phần chính được nối với nhau bằng dấu " . "
+Header.Payload.Signture
+
+- Header: chứa thông tin metadata về token bao gồm
+  **alg**: Thuật toán mã hoá được sử dụng như HS256 RS256
+  **typ**: Loại token thường là JWT
+  {
+  "alg": "HS256",
+  "typ": "JWT"
+  }
+- Payload: chứa dữ liệu chính của token (claims), bao gồm:
+  **Registered claims**: Một số tiêu chuẩn như: + iss: Issuer (Người phát hành) + exp: Expiration time (Thời gian hết hạn) + iat: Issued at (Thời gian phát hành) + sub: Subject (Mục tiêu) + aud: Audience (Đối tượng) mà token hướng tới
+  **Custom claims**: Dữ liệu tuỳ chỉnh như userId, roles,...
+  {
+  "sub": "1234567890",
+  "name": "John Doe",
+  "admin": true,
+  "exp": 1716172800
+  }
+- Signature: được tạo bằng cách mã hoá header và payload đảm bảo tính toàn vẹn của token. Công thức tạo chữ ký:
+  Signature = HMACSHA256(
+  base64UrlEncode(Header) + "." + base64UrlEncode(Payload),
+  secret
+  )
+  **Lưu ý**: Nếu token bị sửa dổi, chữ ký sẽ không khớp và token không hợp lệ
+
+## Cách hoạt động
+
+1. Client gửi yêu cầu đăng nhập
+
+- Người dùng nhập thông tin đăng nhập
+- Server xác thực thông tin đăng nhập và tạo một JWT
+
+2. Server trả JWT về Client
+
+- JWT chứa thông tin người dùng và thời gian hết hạn
+- Token sẽ được lưu trữ ở phía Client (thường là trong localStorage hoặc Cookie)
+
+3. Client sử dụng JWT để truy cập tài nguyên
+
+- Mỗi yêu cầu đến server đều gửi kèm JWT trong HTTP header (Authorization: Bearer<token>)
+- Server xác minh token và cấp quyền truy cập nếu token hợp lệ
+
+## Ưu điểm
+
+- Tính di động: JWT là một chữ ký độc lập và không yêu cầu trạng thái trên server
+- Bảo mật: Tính toàn vẹn: Pay load không thể bị sửa đổi mà không mất hiệu lực chữ ký. Có thể hết hợp HTTPS để mã hoá dữ liệu truyền tải.
+- Hiệu suất cao: Không thể truy vấn dữ liệu mỗi khi xác thực token (nếu không cần blacklist)
+
+## Hạn chế
+
+- Không thể thu hồi: Nếu không sử dụng cơ chết blacklist, một token đã phát hành vẫn có hiệu lực đến khi hết hạn, ngay cả khi người dùng đã đăng xuất.
+- Kích thước lớn: Vì chứa payload, kích thước JWT lướn hơn so với token chỉ có ID
+- Xử lý hết hạn: Cần phải lập trình thêm cơ chế mới token (refresh token)
+
+## Cài đặt
+
+npm install jsonwebtoken
+
+## Khi nào nên sử dụng JWT
+
+JWT rất phù hợp trong các tình huống sau:
+
+- Xác thực không trạng thái
+- Ứng dụng phân tán
+- Hệ thống yêu cầu hiệu suất cao và không muốn lưu trữ thông tin đăng nhập trên server
