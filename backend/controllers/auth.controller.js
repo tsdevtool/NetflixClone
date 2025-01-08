@@ -1,5 +1,6 @@
 import { User } from "../models/user.model.js";
 import bcriptjs from "bcryptjs";
+import { generateTokenAndSetCookie } from "../utils/generateToken.js";
 export const signup = async (req, res) => {
   try {
     const { email, password, username, displayName } = req.body;
@@ -12,7 +13,7 @@ export const signup = async (req, res) => {
 
     const emailRegex = /^[^s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (emailRegex.test(email)) {
+    if (!emailRegex.test(email)) {
       return res.status.json({ success: false, message: "Invalid email" });
     }
 
@@ -27,7 +28,7 @@ export const signup = async (req, res) => {
     if (existingUserByEmail) {
       return res
         .status(400)
-        .json({ success: false, message: "Email alre  ady exists" });
+        .json({ success: false, message: "Email already exists" });
     }
 
     const existingUserByUsername = await User.findOne({ username: username });
@@ -50,6 +51,7 @@ export const signup = async (req, res) => {
       image,
     });
 
+    generateTokenAndSetCookie(newUser._id, res);
     await newUser.save();
     res.status(201).json({
       success: true,
