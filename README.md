@@ -192,3 +192,85 @@ JWT rất phù hợp trong các tình huống sau:
 - Xác thực không trạng thái
 - Ứng dụng phân tán
 - Hệ thống yêu cầu hiệu suất cao và không muốn lưu trữ thông tin đăng nhập trên server
+
+# Token và cookie
+
+Cả Token và Cookie đều được sử dụng trong việc quản lý phiên làm việc (session management) và xác thực người dùng. Tuy nhiên, chúng có sự khác biệt lớn về cách hoạt động, bảo mật, và ứng dụng thực tế.
+
+## 1. Token
+
+**Token** là một chuỗi ký tự đại diện cho quyền truy cập. Một dạng phổ biến của token là JWT (JSON Web Token).
+
+### a, Đặc điểm
+
+**Stateless**: Không lưu trạng thái trên server. Thông tin người dùng được mã hoá trực tiếp trong token (như JWT).
+**Lưu trữ**: Thường được lưu trữ trong localStorage hoặc sessionStorage của trình duyệt. Cũng có thể lưu trong cookie nếu cần.
+**Cách sử dụng**:
+
+- Gửi token qua HTTP Header (Authorization: Bearer <token>)
+- Thích hợp cho API RESTful, đặc biệt là các hệ thống không lưu trữ session trên server
+
+### b, Ưu điểm
+
+**Khả năng sử dụng đa nền tảng**: Token có thể sử dụng trên các dịch vụ khác nhau mà không cần cấu hình thêm (trong các hệ thống microservices).
+**Tính linh hoạt**: có thể lưu trong nhiều nơi (localStoragem cookie hoặc thậm chí là biến trong bộ nhớ).
+**Bảo mật kết hợp HTTPS**: Nếu Token được truyền qua HTTPS, dữ liệu sẽ an toàn trước các cuộc tấn công nghe trộm.
+
+### c, Hạn chế
+
+**Khó thu hồi**: Một token đã phát hành vẫn hợp lệ đến khi hết hạn (nếu không có cơ chế blaclist)
+**Rủi ro khi lưu trữ trong localStorage**: Dễ bị tấn công XSS (Cross-Site Scripting nếu ứng dụng không bảo mật tốt)
+
+## 2. Cookie
+
+Cookie là một tệp nhỏ được trình duyệt lưu trữ, chủ yếu để thông tin liên quan đến phiên làm việc hoặc cách cài đặt của người dùng.
+
+### a, Đặc điểm
+
+**Stateful**: Thường đợc sử dụng để lưu trữ ID phiên (sessionID) để server quản lý trạng thái.
+**Lưu trữ**: Được lưu tự động trong trình duyệt và gửi đi kèm mỗi lần client gửi yêu cầu đến server(nếu được gắn cờ HtthpOnly hoặc Secure).
+**Cách sử dụng**: Cookie thường được dùng trong các ứng dụng web truyền thống (ví dụ: khi người dùng đăng nhập server tạo sessionID và lưu trong cookie).
+
+### b, Ưu điểm:
+
+**Tự động gửi kèm**: Trình duyệt tự động gửi cookie khi gửi request, không cần thao tác thủ công.
+**Quản lý tập trung**: Servrer có quyền toàn quản lý session, bao gồm việc huỷ session
+**Bảo mật với HttpOnly và Secure flags**:
+
+- HttpOnly: Ngăn JS truy cập cookie, giảm rủi ro XSS
+- Secure: Chỉ gửi cookie khi kết nối HTTPS
+
+### c, Hạn chế
+
+**Khả năng mở rộng kém**: Khi sử dụng mở rộngt hành microservices, việc truyền session giữa các dịch vụ có thể trở nên phức tạp.
+**Rủi ro CSRF (Cross-Site Request Forgery)**: Vì cookie được gửi tự động trong mỗi yêu cầu, kẻ tấn công có thể lợi dụng để gửi yêu cầu độc hại thay mặt người dùng.
+**Hạn chế lưu trữ**: Dung lượng cookie bị giới hạn (khoảng 4KB)
+
+## 3. So sánh Token và Cookie
+
+| **Đặc điểm**           | **Token**                                     | **Cookie**                               |
+| ---------------------- | --------------------------------------------- | ---------------------------------------- |
+| **Lưu trữ**            | `localStorage`, `sessionStorage`, hoặc cookie | Trình duyệt lưu tự động                  |
+| **Gửi kèm request**    | Gửi qua HTTP Header (`Authorization`)         | Gửi tự động qua request nếu thuộc domain |
+| **Stateless/Stateful** | Stateless                                     | Stateful                                 |
+| **Bảo mật**            | Dễ bị XSS nếu lưu trong `localStorage`        | Dễ bị CSRF nếu không bảo vệ tốt          |
+| **Quản lý**            | Client quản lý token                          | Server quản lý session                   |
+| **Khả năng mở rộng**   | Phù hợp với các API RESTful và microservices  | Tốt cho ứng dụng đơn lẻ                  |
+| **Dung lượng lưu trữ** | Tùy thuộc vào loại token, thường lớn hơn      | Giới hạn ~4KB                            |
+
+## 4. Sử dụng Token hay Cookie
+
+- Nên sử dụng Token khi:
+  - Bạn đang xây dựng API RESTful.
+  - Ứng dụng kiến trúc microservices.
+  - Muốn giảm tải lưu trữ trạng thái trên server
+- Nên sử dụng Cookie khi:
+  - Ứng dụng web đơn giản, không cần mở rộng lớn
+  - Bạn cần lợi thế trong việc tự động gửi cookie qua request.
+
+## 5. Kết hợp Token và Cookie
+
+Lưu JWT trong cookie với cờ HttpOnly và Secure. Phương pháp này:
+
+- Tránh được XSS vì JS không thể truy cập cookie.
+- Giảm nguy cơ CSRF bằng cách sử dụng các biến pháp phòng ngừa

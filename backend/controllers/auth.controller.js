@@ -1,17 +1,17 @@
 import { User } from "../models/user.model.js";
-import bcriptjs from "bcryptjs";
+import bcryptjs from "bcryptjs";
 import { generateTokenAndSetCookie } from "../utils/generateToken.js";
 export const signup = async (req, res) => {
   try {
-    const { email, password, username, displayName } = req.body;
+    const { email, password, username } = req.body;
 
-    if (!email || !password || !username || !displayName) {
+    if (!email || !password || !username) {
       return res
         .status(400)
         .json({ success: false, message: "Please fill in all fields" });
     }
 
-    const emailRegex = /^[^s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailRegex.test(email)) {
       return res.status.json({ success: false, message: "Invalid email" });
@@ -38,13 +38,12 @@ export const signup = async (req, res) => {
         .json({ success: false, message: "Username already exists" });
     }
 
-    const salt = await bcriptjs.genSalt(10);
-    const hashedPassword = await bcriptjs.hash(password, salt);
+    const salt = await bcryptjs.genSalt(10);
+    const hashedPassword = await bcryptjs.hash(password, salt);
 
-    const image = `https://avatar.iran.liara.run/username?username=${displayName}`;
+    const image = "https://avatar.iran.liara.run/username?username=" + username;
 
     const newUser = new User({
-      displayName,
       email,
       password: hashedPassword,
       username,
@@ -52,7 +51,9 @@ export const signup = async (req, res) => {
     });
 
     generateTokenAndSetCookie(newUser._id, res);
+
     await newUser.save();
+    // console.log(true);
     res.status(201).json({
       success: true,
       user: {
@@ -66,10 +67,57 @@ export const signup = async (req, res) => {
   }
 };
 
-export async function login(req, res) {
-  res.send("Login server");
-}
+export const login = async (req, res) => {
+  try {
+    //Thong tin dang nhap email, password
+    const { email, password } = req.body;
 
-export async function logout(req, res) {
-  res.send("Logout server");
-}
+    //Kiem tra thong tin co trong khong
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Email and password are required" });
+    }
+    //Kiem tra email co nam trong database hay khong => khong = 404
+    const existingUserByEmail = await User.findOne({ email });
+
+    if (!existingUserByEmail) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Email not found" });
+    }
+    //Kiem tra mat khau da dung chua => neu khong = err400
+    const isPasswordCorrect = await bcryptjs.compare(
+      password,
+      existingUserByEmail.password
+    );
+
+    if (!isPasswordCorrect) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Password is incorrect" });
+    }
+
+    generateTokenAndSetCookie(existingUserByEmail._id, res);
+
+    res.status(200).json({
+      success: true,
+      user: {
+        ...existingUserByEmail._doc,
+        password: "",
+      },
+    });
+  } catch (error) {
+    console.log("Error in login");
+  }
+};
+
+export const logout = async (req, res) => {
+  try {
+    res.clearCookie("jwt-netflix");
+    res.status(200).json({ success: true, message: "Logged out successfully" });
+  } catch (error) {
+    console.log("Error in logout controller", error.message);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
