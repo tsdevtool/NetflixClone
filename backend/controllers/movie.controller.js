@@ -78,3 +78,15 @@ export const getSimilarMovies = async (req, res) => {
     return res.status(500).json("Interval Server Error");
   }
 };
+
+export const getMoviesByCategory = async (req, res) => {
+  const { category } = req.params;
+  try {
+    const data = await fetchFromTMDB(
+      `https://api.themoviedb.org/3/movie/${category}?language=en-US&page=1`
+    );
+    res.status(200).json({ success: true, content: data.results });
+  } catch (error) {
+    res.status(500).json("Internal Server Error in MoviesInCategory");
+  }
+};
