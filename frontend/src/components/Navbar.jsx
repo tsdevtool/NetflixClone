@@ -23,7 +23,7 @@ const Navbar = () => {
           />
         </Link>
         {/* Desktop navbar items */}
-        <div className="hidden sm:flex items-center ">
+        <div className="hidden gap-2 sm:flex items-center ">
           <Link
             to={"/"}
             className="hover:underline"
