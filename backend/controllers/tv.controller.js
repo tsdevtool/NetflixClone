@@ -11,7 +11,7 @@ export const getTrendingTv = async (req, res) => {
 
     res.json({ success: true, content: randomMovie });
   } catch (error) {
-    if (error.message.include("404")) {
+    if (error.message.includes("404")) {
       return res.status(404).send(null);
     }
     return res
@@ -29,7 +29,7 @@ export const getTvsTrailers = async (req, res) => {
     );
     res.status(200).json({ success: true, trailers: data.results });
   } catch (error) {
-    if (error.message.include("404")) {
+    if (error.message.includes("404")) {
       return res.status(404).send(null);
     }
     return res
@@ -46,7 +46,7 @@ export const getTvsDetails = async (req, res) => {
     );
     res.status(200).json({ success: true, content: data });
   } catch (error) {
-    if (error.message.include("404")) {
+    if (error.message.includes("404")) {
       return res.status(404).send(null);
     }
     return res
@@ -64,7 +64,7 @@ export const getSimilarTvs = async (req, res) => {
     );
     return res.status(200).json({ success: true, simimlar: data.results });
   } catch (error) {
-    if (error.message.include("404")) {
+    if (error.message.includes("404")) {
       return res.status(404).send(null);
     }
     return res
