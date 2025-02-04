@@ -17,7 +17,7 @@ export const protectRoute = async (req, res, next) => {
     if (!decoded) {
       return res
         .status(401)
-        .json({ succcess: false, message: "Unauthorized - Invalid Token" });
+        .json({ success: false, message: "Unauthorized - Invalid Token" });
     }
 
     const user = await User.findById(decoded.userId).select("-password");
@@ -33,6 +33,6 @@ export const protectRoute = async (req, res, next) => {
   } catch (error) {
     console.error("Error in protectRoute middleware", error.message);
 
-    res.status(500).json({ succcess: false, message: "Internal Server Error" });
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
